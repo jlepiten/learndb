@@ -38,15 +38,19 @@ export class KeyValueStore {
 
     const sstFileName = this._generateNextSstFileName()
 
+    const bufferObject = {}
+    for (const entry of this.buffer) {
+      bufferObject[entry[KEY_INDEX]] = entry
+    }
+
     // Flush the buffer to disk
     fs.writeFileSync(
       path.resolve(this.dbPath, sstFileName),
       // Stringify the buffer entries, reverse sort them, and then join them
       // into one string separated by newlines.  Still need a final trailing newline.
-      this.buffer
-        .map(JSON.stringify)
+      Object.keys(bufferObject)
+        .map(key => JSON.stringify(bufferObject[key]))
         .sort()
-        .reverse()
         .join('\n') + '\n'
     )
 
@@ -104,7 +108,7 @@ export class KeyValueStore {
           break
         }
 
-        if (first === last) {
+        if (first >= last) {
           break
         }
 
